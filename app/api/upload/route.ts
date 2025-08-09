@@ -6,6 +6,8 @@ import { saveFile } from '@/lib/storage'
 import { extractScoreFromPdf } from '@/lib/extractor'
 
 export async function POST(req: Request) {
+  // Ensure the user is logged in. All roles may upload, but clients are
+  // restricted to uploading documents for their own client record.
   const user = await requireRole([Role.ADMIN, Role.STAFF, Role.CLIENT])
   const form = await req.formData()
   const file = form.get('file') as File | null
@@ -14,10 +16,17 @@ export async function POST(req: Request) {
   if (!file || !clientId) {
     return NextResponse.json({ error: 'Missing file or clientId' }, { status: 400 })
   }
+  // If the user is a client, verify they are only uploading for their own client record
+  if (user.role === Role.CLIENT) {
+    const client = await prisma.client.findFirst({ where: { id: clientId, userId: user.id } })
+    if (!client) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
   const filePath = await saveFile(`${Date.now()}-${file.name}`, buffer)
-  // Create document
+  // Create a document record
   const doc = await prisma.document.create({
     data: {
       clientId,
@@ -26,7 +35,7 @@ export async function POST(req: Request) {
       path: filePath,
     },
   })
-  // Extract score and update BureauScore
+  // Extract the credit score from the PDF and update the client’s bureau scores
   const { bureau, score, metadata } = await extractScoreFromPdf(buffer)
   if (bureau && score !== undefined) {
     await prisma.bureauScore.upsert({
@@ -46,7 +55,10 @@ export async function POST(req: Request) {
       },
     })
   }
-  // Save extraction metadata on document
-  await prisma.document.update({ where: { id: doc.id }, data: { bureau: bureau || null, metadata: metadata || {} } })
+  // Persist extraction metadata on the document for auditing
+  await prisma.document.update({
+    where: { id: doc.id },
+    data: { bureau: bureau || null, metadata: metadata || {} },
+  })
   return NextResponse.json({ documentId: doc.id, bureau, score })
 }
