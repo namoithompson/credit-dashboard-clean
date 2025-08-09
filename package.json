@@ -1,0 +1,40 @@
+{
+  "name": "credit-dashboard-clean",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next-auth": "^4.24.6",
+    "@prisma/client": "^5.3.1",
+    "prisma": "^5.3.1",
+    "zod": "^3.22.2",
+    "tailwindcss": "^3.3.3",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "zustand": "^4.4.0",
+    "lucide-react": "^0.35.0",
+    "pdf-parse": "^1.1.1",
+    "multer": "^1.4.5",
+    "@uploadthing/mime-types": "^1.0.1",
+    "@headlessui/react": "^1.7.14",
+    "classnames": "^2.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.7",
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.5",
+    "@vitejs/plugin-react": "^4.0.0",
+    "prisma": "^5.3.1"
+  }
+}
